@@ -28,7 +28,7 @@ Before you begin, ensure you have met the following requirements:
 
 ## Installation
 
-To install Squid and necessary utilities, run the following commands:
+To install pyrogram, run the following commands:
 
 ```bash
 pip install pyrogram
