@@ -22,6 +22,10 @@
 - **Cancel Warning** reset a user’s warnings  
 - **Admin-only controls** with interactive inline keyboards
 
+## 🎮 Demo Bot
+
+Try it live: [@BioLinkProBot](https://t.me/BioLinkProBot)
+
 ## Requirements
 
 Before you begin, ensure you have met the following requirements:
