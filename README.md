@@ -17,44 +17,51 @@
 ## Features
 
 - Automatically checks user bios for links when they send a message in the group.
-- Configurable warnings, mutes, and bans for users with links in their bios.
-- Admin-only configuration for setting punishment options.
-- Interactive inline keyboard for easy configuration.
+- Configurable **warnings**, **mutes**, and **bans** for users with links in their bios.
+- **Whitelist** & **Unwhitelist** trusted members  
+- **Cancel Warning** reset a user’s warnings  
+- **Admin-only controls** with interactive inline keyboards
+
 ## Requirements
 
 Before you begin, ensure you have met the following requirements:
 
-- Python 3.8 & `pyrogram`
+- Python 3.8 or higher
 
 ## Installation
 
-To install pyrogram, run the following commands:
-
 ```bash
-pip install pyrogram
+git clone https://github.com/bisnuray/BioLink-Protector
+cd BioLink-Protector
+pip install -r requirements.txt
 
 ```
 
 ## Configuration
 
-1. Replace the placeholders in the script with your actual values:
+1. Open the `config.py` file in your favorite text editor.  
+2. Replace the placeholders for `API_ID`, `API_HASH`, `BOT_TOKEN`, and `MONGO_URI` with your actual values:  
+   - **`API_ID`**: Your API ID from [my.telegram.org](https://my.telegram.org).  
+   - **`API_HASH`**: Your API Hash from [my.telegram.org](https://my.telegram.org).  
+   - **`BOT_TOKEN`**: The token you obtained from [@BotFather](https://t.me/BotFather).  
+   - **`MONGO_URI`**: Your MongoDB connection string (e.g., from [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)).  
 
-    - `api_id` and `api_hash`: Obtain these from [my.telegram.org](https://my.telegram.org).
-    - `bot_token`: Your Telegram bot token from [BotFather](https://t.me/BotFather).
-
-## Deploy the Bot
+## ▶️ Deploy the Bot
 
 ```sh
-git clone https://github.com/bisnuray/BioLink-Protector
-cd BioLink-Protector
-python3 bio.py
+python bio.py
 ```
 
-## Usage
+## ⚙️ Usage
 
-- Add the bot to your Telegram group and grant it necessary permissions (e.g., delete messages, restrict users).
-- Use the `/config` command in the group to configure the bot's punishment settings.
-- The default punishment is mute after 3 warnings.
+1. Add the bot to your group.  
+2. Grant the bot **Admin** rights (delete & restrict).  
+3. In-chat commands (admins only):  
+   - `/config` → choose “Warn”, “Mute”, or “Ban” and set warn count  
+   - `/free [reply|id]` → whitelist a user  
+   - `/unfree [reply|id]` → remove from whitelist  
+   - `/freelist` → view all whitelisted users  
+4. **Auto-scan:** When a non-whitelisted user posts, their bio is checked—warn/mute/ban applies.  
 
 
 ✨ **Note**: Fork this repo, & Star ☀️ the repo if you liked it. and Share this repo with Proper Credit
