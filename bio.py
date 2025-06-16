@@ -1,199 +1,366 @@
 """
 Author: Bisnu Ray
-User: https://t.me/SmartBisnuBio
+User: https://t.me/BisnuRay
 Channel: https://t.me/itsSmartDev
 """
 
-from pyrogram import Client, filters, enums, errors
+from pyrogram import Client, filters, errors
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ChatPermissions
-import re
 
-# User Client setup
-api_id = "12345678"     # Replace this api_id
-api_hash = "abcdefghijklm123456789"       # Replace this api_hash
-bot_token = "123456789:ABCDEFH-k6LrYjQJ7A28EocXY"       # Replace this with bot_token
-
-app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
-
-url_pattern = re.compile(
-    r'(https?://|www\.)[a-zA-Z0-9.\-]+(\.[a-zA-Z]{2,})+(/[a-zA-Z0-9._%+-]*)*'
+from helper.utils import (
+    is_admin,
+    get_config, update_config,
+    increment_warning, reset_warnings,
+    is_whitelisted, add_whitelist, remove_whitelist, get_whitelist
 )
 
-warnings = {}
-punishment = {}
+from config import (
+    API_ID,
+    API_HASH,
+    BOT_TOKEN,
+    URL_PATTERN
+)
 
-default_warning_limit = 3  #Default Warning Limit
-default_punishment = "mute" #Default punishment Limit 
-default_punishment_set = ("warn", default_warning_limit, default_punishment)
+app = Client(
+    "biolink_protector_bot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN,
+)
 
-async def is_admin(client, chat_id, user_id):
-    async for member in client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ADMINISTRATORS):
-        if member.user.id == user_id:
-            return True
-    return False
-
-async def has_permissions(client, chat_id, user_id, permissions):
-    chat_member = await client.get_chat_member(chat_id, user_id)
-    for perm in permissions:
-        if not getattr(chat_member.privileges, perm, False):
-            return False
-    return True
+@app.on_message(filters.command("start"))
+async def start_handler(client: Client, message):
+    chat_id = message.chat.id
+    bot = await client.get_me()
+    add_url = f"https://t.me/{bot.username}?startgroup=true"
+    text = (
+        "**✨ Welcome to BioLink Protector Bot! ✨**\n\n"
+        "🛡️ I help protect your groups from users with links in their bio.\n\n"
+        "**🔹 Key Features:**\n"
+        "   • Automatic URL detection in user bios\n"
+        "   • Customizable warning limit\n"
+        "   • Auto-mute or ban when limit is reached\n"
+        "   • Whitelist management for trusted users\n\n"
+        "**Use /help to see all available commands.**"
+    )
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("➕ Add Me to Your Group", url=add_url)],
+        [
+            InlineKeyboardButton("🛠️ Support", url="https://t.me/itsSmartDev"),
+            InlineKeyboardButton("🗑️ Close", callback_data="close")
+        ]
+    ])
+    await client.send_message(chat_id, text, reply_markup=kb)
+    
+@app.on_message(filters.command("help"))
+async def help_handler(client: Client, message):
+    chat_id = message.chat.id
+    help_text = (
+        "**🛠️ Bot Commands & Usage**\n\n"
+        "`/config` – set warn-limit & punishment mode\n"
+        "`/free` – whitelist a user (reply or user/id)\n"
+        "`/unfree` – remove from whitelist\n"
+        "`/freelist` – list all whitelisted users\n\n"
+        "**When someone with a URL in their bio posts, I’ll:**\n"
+        " 1. ⚠️ Warn them\n"
+        " 2. 🔇 Mute if they exceed limit\n"
+        " 3. 🔨 Ban if set to ban\n\n"
+        "**Use the inline buttons on warnings to cancel or whitelist**"
+    )
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🗑️ Close", callback_data="close")]
+    ])
+    await client.send_message(chat_id, help_text, reply_markup=kb)
 
 @app.on_message(filters.group & filters.command("config"))
-async def configure(client, message):
+async def configure(client: Client, message):
     chat_id = message.chat.id
     user_id = message.from_user.id
-
     if not await is_admin(client, chat_id, user_id):
-        await message.reply_text("<b>❌ You are not administrator</b>", parse_mode=enums.ParseMode.HTML)
-        await message.delete()  # Delete the command message
         return
 
-    current_punishment = punishment.get(chat_id, default_punishment_set)[2]
+    mode, limit, penalty = await get_config(chat_id)
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("Warn", callback_data="warn")],
-        [InlineKeyboardButton("Mute ✅" if current_punishment == "mute" else "Mute", callback_data="mute"), 
-         InlineKeyboardButton("Ban ✅" if current_punishment == "ban" else "Ban", callback_data="ban")],
+        [
+            InlineKeyboardButton("Mute ✅" if penalty == "mute" else "Mute", callback_data="mute"),
+            InlineKeyboardButton("Ban ✅" if penalty == "ban" else "Ban", callback_data="ban")
+        ],
         [InlineKeyboardButton("Close", callback_data="close")]
     ])
-    await message.reply_text("<b>Select punishment for users who have links in their bio:</b>", reply_markup=keyboard, parse_mode=enums.ParseMode.HTML)
-    await message.delete()  # Delete the command message
+    await client.send_message(
+        chat_id,
+        "**Choose penalty for users with links in bio:**",
+        reply_markup=keyboard
+    )
+    await message.delete()
+
+@app.on_message(filters.group & filters.command("free"))
+async def command_free(client: Client, message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    if not await is_admin(client, chat_id, user_id):
+        return
+
+    if message.reply_to_message:
+        target = message.reply_to_message.from_user
+    elif len(message.command) > 1:
+        arg = message.command[1]
+        target = await client.get_users(int(arg) if arg.isdigit() else arg)
+    else:
+        return await client.send_message(chat_id, "**Reply or use /free user or id to whitelist someone.**")
+
+    await add_whitelist(chat_id, target.id)
+    await reset_warnings(chat_id, target.id)
+
+    text = f"**✅ {target.mention} has been added to the whitelist**"
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🚫 Unwhitelist", callback_data=f"unwhitelist_{target.id}"),
+            InlineKeyboardButton("🗑️ Close", callback_data="close")
+        ]
+    ])
+    await client.send_message(chat_id, text, reply_markup=keyboard)
+
+@app.on_message(filters.group & filters.command("unfree"))
+async def command_unfree(client: Client, message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    if not await is_admin(client, chat_id, user_id):
+        return
+
+    if message.reply_to_message:
+        target = message.reply_to_message.from_user
+    elif len(message.command) > 1:
+        arg = message.command[1]
+        target = await client.get_users(int(arg) if arg.isdigit() else arg)
+    else:
+        return await client.send_message(chat_id, "**Reply or use /unfree user or id to unwhitelist someone.**")
+
+    if await is_whitelisted(chat_id, target.id):
+        await remove_whitelist(chat_id, target.id)
+        text = f"**🚫 {target.mention} has been removed from the whitelist**"
+    else:
+        text = f"**ℹ️ {target.mention} is not whitelisted.**"
+
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Whitelist", callback_data=f"whitelist_{target.id}"),
+            InlineKeyboardButton("🗑️ Close", callback_data="close")
+        ]
+    ])
+    await client.send_message(chat_id, text, reply_markup=keyboard)
+
+@app.on_message(filters.group & filters.command("freelist"))
+async def command_freelist(client: Client, message):
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    if not await is_admin(client, chat_id, user_id):
+        return
+
+    ids = await get_whitelist(chat_id)
+    if not ids:
+        await client.send_message(chat_id, "**⚠️ No users are whitelisted in this group.**")
+        return
+
+    text = "**📋 Whitelisted Users:**\n\n"
+    for i, uid in enumerate(ids, start=1):
+        try:
+            user = await client.get_users(uid)
+            name = f"{user.first_name}{(' ' + user.last_name) if user.last_name else ''}"
+            text += f"{i}: {name} [`{uid}`]\n"
+        except:
+            text += f"{i}: [User not found] [`{uid}`]\n"
+
+    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🗑️ Close", callback_data="close")]])
+    await client.send_message(chat_id, text, reply_markup=keyboard)
 
 @app.on_callback_query()
-async def callback_handler(client, callback_query):
+async def callback_handler(client: Client, callback_query):
     data = callback_query.data
     chat_id = callback_query.message.chat.id
     user_id = callback_query.from_user.id
-
     if not await is_admin(client, chat_id, user_id):
-        await callback_query.answer("❌ You are not administrator", show_alert=True)
-        return
+        return await callback_query.answer("❌ You are not administrator", show_alert=True)
 
     if data == "close":
-        await callback_query.message.delete()
-        return
+        return await callback_query.message.delete()
 
     if data == "back":
-        current_punishment = punishment.get(chat_id, default_punishment_set)[2]
-        keyboard = InlineKeyboardMarkup([
+        mode, limit, penalty = await get_config(chat_id)
+        kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("Warn", callback_data="warn")],
-            [InlineKeyboardButton("Mute ✅" if current_punishment == "mute" else "Mute", callback_data="mute"), 
-             InlineKeyboardButton("Ban ✅" if current_punishment == "ban" else "Ban", callback_data="ban")],
+            [
+                InlineKeyboardButton("Mute ✅" if penalty=="mute" else "Mute", callback_data="mute"),
+                InlineKeyboardButton("Ban ✅" if penalty=="ban" else "Ban", callback_data="ban")
+            ],
             [InlineKeyboardButton("Close", callback_data="close")]
         ])
-        await callback_query.message.edit_text("<b>Select punishment for users who have links in their bio:</b>", reply_markup=keyboard, parse_mode=enums.ParseMode.HTML)
-        await callback_query.answer()
-        return
+        await callback_query.message.edit_text("**Choose penalty for users with links in bio:**", reply_markup=kb)
+        return await callback_query.answer()
 
     if data == "warn":
-        current_warning_limit = punishment.get(chat_id, default_punishment_set)[1]
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("3 ✅" if current_warning_limit == 3 else "3", callback_data="warn_3"), 
-             InlineKeyboardButton("4 ✅" if current_warning_limit == 4 else "4", callback_data="warn_4"),
-             InlineKeyboardButton("5 ✅" if current_warning_limit == 5 else "5", callback_data="warn_5")],
+        _, selected_limit, _ = await get_config(chat_id)
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton(f"3 ✅" if selected_limit==3 else "3", callback_data="warn_3"),
+             InlineKeyboardButton(f"4 ✅" if selected_limit==4 else "4", callback_data="warn_4"),
+             InlineKeyboardButton(f"5 ✅" if selected_limit==5 else "5", callback_data="warn_5")],
             [InlineKeyboardButton("Back", callback_data="back"), InlineKeyboardButton("Close", callback_data="close")]
         ])
-        await callback_query.message.edit_text("<b>Select the number of warnings before punishment:</b>", reply_markup=keyboard, parse_mode=enums.ParseMode.HTML)
-        return
+        return await callback_query.message.edit_text("**Select number of warns before penalty:**", reply_markup=kb)
 
     if data in ["mute", "ban"]:
-        punishment[chat_id] = ("warn", punishment.get(chat_id, default_punishment_set)[1], data)
-        selected_keyboard = InlineKeyboardMarkup([
+        await update_config(chat_id, penalty=data)
+        mode, limit, penalty = await get_config(chat_id)
+        kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("Warn", callback_data="warn")],
-            [InlineKeyboardButton("Mute ✅" if data == "mute" else "Mute", callback_data="mute"), 
-             InlineKeyboardButton("Ban ✅" if data == "ban" else "Ban", callback_data="ban")],
+            [
+                InlineKeyboardButton("Mute ✅" if penalty=="mute" else "Mute", callback_data="mute"),
+                InlineKeyboardButton("Ban ✅" if penalty=="ban" else "Ban", callback_data="ban")
+            ],
             [InlineKeyboardButton("Close", callback_data="close")]
         ])
-        await callback_query.message.edit_text("<b>Punishment selected:</b>", reply_markup=selected_keyboard, parse_mode=enums.ParseMode.HTML)
-        await callback_query.answer()
-    elif data.startswith("warn_"):
-        num_warnings = int(data.split("_")[1])
-        punishment[chat_id] = ("warn", num_warnings, punishment.get(chat_id, default_punishment_set)[2])
-        current_warning_limit = punishment.get(chat_id, default_punishment_set)[1]
-        selected_keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("3 ✅" if num_warnings == 3 else "3", callback_data="warn_3"), 
-             InlineKeyboardButton("4 ✅" if num_warnings == 4 else "4", callback_data="warn_4"),
-             InlineKeyboardButton("5 ✅" if num_warnings == 5 else "5", callback_data="warn_5")],
+        await callback_query.message.edit_text("**Punishment selected:**", reply_markup=kb)
+        return await callback_query.answer()
+
+    if data.startswith("warn_"):
+        count = int(data.split("_")[1])
+        await update_config(chat_id, limit=count)
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton(f"3 ✅" if count==3 else "3", callback_data="warn_3"),
+             InlineKeyboardButton(f"4 ✅" if count==4 else "4", callback_data="warn_4"),
+             InlineKeyboardButton(f"5 ✅" if count==5 else "5", callback_data="warn_5")],
             [InlineKeyboardButton("Back", callback_data="back"), InlineKeyboardButton("Close", callback_data="close")]
         ])
-        await callback_query.message.edit_text(f"<b>Warning limit set to {num_warnings}</b>", reply_markup=selected_keyboard, parse_mode=enums.ParseMode.HTML)
-        await callback_query.answer()
-    elif data.startswith("unmute_"):
-        target_user_id = int(data.split("_")[1])
-        target_user = await client.get_chat(target_user_id)
-        target_user_name = f"{target_user.first_name} {target_user.last_name}" if target_user.last_name else target_user.first_name
+        await callback_query.message.edit_text(f"**Warning limit set to {count}**", reply_markup=kb)
+        return await callback_query.answer()
+
+    if data.startswith(("unmute_", "unban_")):
+        action, uid = data.split("_")
+        target_id = int(uid)
+        user = await client.get_chat(target_id)
+        name = f"{user.first_name}{(' ' + user.last_name) if user.last_name else ''}"
         try:
-            await client.restrict_chat_member(chat_id, target_user_id, ChatPermissions(can_send_messages=True))
-            await callback_query.message.edit(f"{target_user_name} [<code>{target_user_id}</code>] has been unmuted", parse_mode=enums.ParseMode.HTML)
+            if action == "unmute":
+                await client.restrict_chat_member(chat_id, target_id, ChatPermissions(can_send_messages=True))
+            else:
+                await client.unban_chat_member(chat_id, target_id)
+            await reset_warnings(chat_id, target_id)
+            msg = f"**{name} (`{target_id}`) has been {'unmuted' if action=='unmute' else 'unbanned'}**."
+
+            kb = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("Whitelist ✅", callback_data=f"whitelist_{target_id}"),
+                    InlineKeyboardButton("🗑️ Close", callback_data="close")
+                ]
+            ])
+            await callback_query.message.edit_text(msg, reply_markup=kb)
+        
         except errors.ChatAdminRequired:
-            await callback_query.message.edit("I don't have permission to unmute users.")
-        await callback_query.answer()
-    elif data.startswith("unban_"):
-        target_user_id = int(data.split("_")[1])
-        target_user = await client.get_chat(target_user_id)
-        target_user_name = f"{target_user.first_name} {target_user.last_name}" if target_user.last_name else target_user.first_name
-        try:
-            await client.unban_chat_member(chat_id, target_user_id)
-            await callback_query.message.edit(f"{target_user_name} [<code>{target_user_id}</code>] has been unbanned", parse_mode=enums.ParseMode.HTML)
-        except errors.ChatAdminRequired:
-            await callback_query.message.edit("I don't have permission to unban users.")
-        await callback_query.answer()
+            await callback_query.message.edit_text(f"I don't have permission to {action} users.")
+        return await callback_query.answer()
+
+    if data.startswith("cancel_warn_"):
+        target_id = int(data.split("_")[-1])
+        await reset_warnings(chat_id, target_id)
+        user = await client.get_chat(target_id)
+        full_name = f"{user.first_name}{(' ' + user.last_name) if user.last_name else ''}"
+        mention = f"[{full_name}](tg://user?id={target_id})"
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("Whitelist✅", callback_data=f"whitelist_{target_id}"),
+             InlineKeyboardButton("🗑️ Close", callback_data="close")]
+        ])
+        await callback_query.message.edit_text(f"**✅ {mention} [`{target_id}`] has no more warnings!**", reply_markup=kb)
+        return await callback_query.answer()
+
+    if data.startswith("whitelist_"):
+        target_id = int(data.split("_")[1])
+        await add_whitelist(chat_id, target_id)
+        await reset_warnings(chat_id, target_id)
+        user = await client.get_chat(target_id)
+        full_name = f"{user.first_name}{(' ' + user.last_name) if user.last_name else ''}"
+        mention = f"[{full_name}](tg://user?id={target_id})"
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🚫 Unwhitelist", callback_data=f"unwhitelist_{target_id}"),
+             InlineKeyboardButton("🗑️ Close", callback_data="close")]
+        ])
+        await callback_query.message.edit_text(f"**✅ {mention} [`{target_id}`] has been whitelisted!**", reply_markup=kb)
+        return await callback_query.answer()
+
+    if data.startswith("unwhitelist_"):
+        target_id = int(data.split("_")[1])
+        await remove_whitelist(chat_id, target_id)
+        user = await client.get_chat(target_id)
+        full_name = f"{user.first_name}{(' ' + user.last_name) if user.last_name else ''}"
+        mention = f"[{full_name}](tg://user?id={target_id})"
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("Whitelist✅", callback_data=f"whitelist_{target_id}"),
+             InlineKeyboardButton("🗑️ Close", callback_data="close")]
+        ])
+        await callback_query.message.edit_text(f"**❌ {mention} [`{target_id}`] has been removed from whitelist.**", reply_markup=kb)
+        return await callback_query.answer()
 
 @app.on_message(filters.group)
-async def check_bio(client, message):
+async def check_bio(client: Client, message):
     chat_id = message.chat.id
     user_id = message.from_user.id
+    if await is_admin(client, chat_id, user_id) or await is_whitelisted(chat_id, user_id):
+        return
 
-    # Fetch user bio
-    user_full = await client.get_chat(user_id)
-    bio = user_full.bio
-    if user_full.username:
-        user_name = f"@{user_full.username} [<code>{user_id}</code>]"
-    else:
-        user_name = f"{user_full.first_name} {user_full.last_name} [<code>{user_id}</code>]" if user_full.last_name else f"{user_full.first_name} [<code>{user_id}</code>]"
+    user = await client.get_chat(user_id)
+    bio = user.bio or ""
+    full_name = f"{user.first_name}{(' ' + user.last_name) if user.last_name else ''}"
+    mention = f"[{full_name}](tg://user?id={user_id})"
 
-    if bio and re.search(url_pattern, bio):
+    if URL_PATTERN.search(bio):
         try:
             await message.delete()
         except errors.MessageDeleteForbidden:
-            await message.reply_text("Please grant me delete permission.")
-            return
+            return await message.reply_text("Please grant me delete permission.")
 
-        action = punishment.get(chat_id, default_punishment_set)
-        if action[0] == "warn":
-            if user_id not in warnings:
-                warnings[user_id] = 0
-            warnings[user_id] += 1
-            sent_msg = await message.reply_text(f"{user_name} please remove any links from your bio. warned {warnings[user_id]}/{action[1]}", parse_mode=enums.ParseMode.HTML)
-            if warnings[user_id] >= action[1]:
+        mode, limit, penalty = await get_config(chat_id)
+        if mode == "warn":
+            count = await increment_warning(chat_id, user_id)
+            warning_text = (
+                "**🚨 Warning Issued** 🚨\n\n"
+                f"👤 **User:** {mention} `[{user_id}]`\n"
+                "❌ **Reason:** URL found in bio\n"
+                f"⚠️ **Warning:** {count}/{limit}\n\n"
+                "**Notice: Please remove any links from your bio.**"
+            )
+            keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ Cancel Warning", callback_data=f"cancel_warn_{user_id}"),
+                 InlineKeyboardButton("✅ Whitelist", callback_data=f"whitelist_{user_id}")],
+                [InlineKeyboardButton("🗑️ Close", callback_data="close")]
+            ])
+            sent = await message.reply_text(warning_text, reply_markup=keyboard)
+            if count >= limit:
                 try:
-                    if action[2] == "mute":
+                    if penalty == "mute":
                         await client.restrict_chat_member(chat_id, user_id, ChatPermissions())
-                        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Unmute ✅", callback_data=f"unmute_{user_id}")]])
-                        await sent_msg.edit(f"{user_name} has been 🔇 muted for [ Link In Bio ].", reply_markup=keyboard)
-                    elif action[2] == "ban":
+                        kb = InlineKeyboardMarkup([[InlineKeyboardButton("Unmute ✅", callback_data=f"unmute_{user_id}")]])
+                        await sent.edit_text(f"**{user_name} has been 🔇 muted for [Link In Bio].**", reply_markup=kb)
+                    else:
                         await client.ban_chat_member(chat_id, user_id)
-                        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Unban ✅", callback_data=f"unban_{user_id}")]])
-                        await sent_msg.edit(f"{user_name} has been 🔨 banned for [ Link In Bio ].", reply_markup=keyboard)
+                        kb = InlineKeyboardMarkup([[InlineKeyboardButton("Unban ✅", callback_data=f"unban_{user_id}")]])
+                        await sent.edit_text(f"**{user_name} has been 🔨 banned for [Link In Bio].**", reply_markup=kb)
+                
                 except errors.ChatAdminRequired:
-                    await sent_msg.edit(f"I don't have permission to {action[2]} users.")
-        elif action[0] == "mute":
+                    await sent.edit_text(f"**I don't have permission to {penalty} users.**")
+        else:
             try:
-                await client.restrict_chat_member(chat_id, user_id, ChatPermissions())
-                keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Unmute", callback_data=f"unmute_{user_id}")]])
-                await message.reply_text(f"{user_name} has been 🔇 muted for [ Link In Bio ].", reply_markup=keyboard)
+                if mode == "mute":
+                    await client.restrict_chat_member(chat_id, user_id, ChatPermissions())
+                    kb = InlineKeyboardMarkup([[InlineKeyboardButton("Unmute", callback_data=f"unmute_{user_id}")]])
+                    await message.reply_text(f"{user_name} has been 🔇 muted for [Link In Bio].", reply_markup=kb)
+                else:
+                    await client.ban_chat_member(chat_id, user_id)
+                    kb = InlineKeyboardMarkup([[InlineKeyboardButton("Unban", callback_data=f"unban_{user_id}")]])
+                    await message.reply_text(f"{user_name} has been 🔨 banned for [Link In Bio].", reply_markup=kb)
             except errors.ChatAdminRequired:
-                await message.reply_text("I don't have permission to mute users.")
-        elif action[0] == "ban":
-            try:
-                await client.ban_chat_member(chat_id, user_id)
-                keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Unban", callback_data=f"unban_{user_id}")]])
-                await message.reply_text(f"{user_name} has been 🔨 banned for [ Link In Bio ].", reply_markup=keyboard)
-            except errors.ChatAdminRequired:
-                await message.reply_text("I don't have permission to ban users.")
+                return await message.reply_text(f"I don't have permission to {mode} users.")
     else:
-        # If user has removed the link, reset their warnings
-        if user_id in warnings:
-            del warnings[user_id]
+        await reset_warnings(chat_id, user_id)
 
-app.run()
+if __name__ == "__main__":
+    app.run()
