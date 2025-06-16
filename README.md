@@ -46,13 +46,13 @@ pip install -r requirements.txt
    - **`BOT_TOKEN`**: The token you obtained from [@BotFather](https://t.me/BotFather).  
    - **`MONGO_URI`**: Your MongoDB connection string (e.g., from [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)).  
 
-## ▶️ Deploy the Bot
+## Deploy the Bot
 
 ```sh
 python bio.py
 ```
 
-## ⚙️ Usage
+## Usage
 
 1. Add the bot to your group.  
 2. Grant the bot **Admin** rights (delete & restrict).  
