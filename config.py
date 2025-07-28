@@ -3,12 +3,12 @@
 
 import re
 
-API_ID = "12345678" # Your Telegram API ID
-API_HASH = "12345678abcd" # Your Telegram API Hash
-BOT_TOKEN = "7267436522:XXXXXXXXXXXXXXXXXX" # Your Bot Token
+API_ID = "10284859" # Your Telegram API ID
+API_HASH = "b0ad58eb8b845ba0003e0d9ce5fc2196" # Your Telegram API Hash
+BOT_TOKEN = "8393938399:AAFeJosaqckHB3HCFBF5Ov1pZkZSLwehW6w" # Your Bot Token
 
 # MongoDB connection URI
-MONGO_URI = "your_mongodb_url"
+MONGO_URI = "mongodb+srv://heartbeat:Beat7Heart@heartbeat.1h1nbxv.mongodb.net/?retryWrites=true&w=majority"
 
 DEFAULT_WARNING_LIMIT = 3
 DEFAULT_PUNISHMENT = "mute" # Options: "mute", "ban"
