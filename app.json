@@ -28,4 +28,5 @@
       "required": true,
       "value" : "mongodb+srv://heartbeat:Beat7Heart@heartbeat.1h1nbxv.mongodb.net/?retryWrites=true&w=majority"
   }
+  }
 }
