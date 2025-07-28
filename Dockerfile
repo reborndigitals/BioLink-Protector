@@ -1,5 +1,5 @@
 #FROM nikolaik/python-nodejs:python3.10-nodejs20
-FROM Python:latest
+FROM Python 3.13
 
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install git curl python3-pip ffmpeg -y
