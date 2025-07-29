@@ -197,7 +197,10 @@ async def callback_handler(client: Client, callback_query):
     if data == "warn":
         _, selected_limit, _ = await get_config(chat_id)
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton(f"3 ✅" if selected_limit==3 else "3", callback_data="warn_3"),
+            [InlineKeyboardButton(f"0 ✅" if selected_limit==0 else "0", callback_data="warn_0"),
+             InlineKeyboardButton(f"1 ✅" if selected_limit==1 else "1", callback_data="warn_1"),
+             InlineKeyboardButton(f"2 ✅" if selected_limit==2 else "2", callback_data="warn_2"),
+             InlineKeyboardButton(f"3 ✅" if selected_limit==3 else "3", callback_data="warn_3"),
              InlineKeyboardButton(f"4 ✅" if selected_limit==4 else "4", callback_data="warn_4"),
              InlineKeyboardButton(f"5 ✅" if selected_limit==5 else "5", callback_data="warn_5")],
             [InlineKeyboardButton("Back", callback_data="back"), InlineKeyboardButton("Close", callback_data="close")]
@@ -222,7 +225,10 @@ async def callback_handler(client: Client, callback_query):
         count = int(data.split("_")[1])
         await update_config(chat_id, limit=count)
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton(f"3 ✅" if count==3 else "3", callback_data="warn_3"),
+            [InlineKeyboardButton(f"0 ✅" if count==0 else "0", callback_data="warn_0"),
+             InlineKeyboardButton(f"1 ✅" if count==1 else "1", callback_data="warn_1"),
+             InlineKeyboardButton(f"2 ✅" if count==2 else "2", callback_data="warn_2"),
+             InlineKeyboardButton(f"3 ✅" if count==3 else "3", callback_data="warn_3"),
              InlineKeyboardButton(f"4 ✅" if count==4 else "4", callback_data="warn_4"),
              InlineKeyboardButton(f"5 ✅" if count==5 else "5", callback_data="warn_5")],
             [InlineKeyboardButton("Back", callback_data="back"), InlineKeyboardButton("Close", callback_data="close")]
