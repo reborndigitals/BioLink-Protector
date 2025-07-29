@@ -34,18 +34,14 @@ async def start_handler(client: Client, message):
     bot = await client.get_me()
     add_url = f"https://t.me/{bot.username}?startgroup=true"
     text = (
-        "**ᴀᴍ ʙɪᴏ ʟɪɴᴋ ᴘʀᴏᴛᴇᴄᴛᴏʀ
+        "**ᴀᴍ ʙɪᴏ ʟɪɴᴋ ᴘʀᴏᴛᴇᴄᴛᴏʀ\n**"
 
-𝐊ɛʏ 𝐅ɛαтʋяɛƨ:
-🔻 ᴀᴜᴛᴏ ᴅᴇᴛᴇᴄᴛ ᴜʀʟ
-🔻 ᴄᴜ𝗌ᴛᴏᴍɪᴢᴇ ᴡᴀʀɴɪɴɢ ʟɪᴍɪᴛ
-🔻 ᴀᴜᴛᴏᴍᴜᴛᴇ | ʙᴀɴ
-🔻 ᴡʜɪᴛᴇʟɪ𝗌ᴛ
+"**<blockquote>𝐊ɛʏ 𝐅ɛαтʋяɛƨ:</blockquote>**\n"
+"<blockquote>**🔻 ᴀᴜᴛᴏ ᴅᴇᴛᴇᴄᴛ ᴜʀʟ\n🔻 ᴄᴜ𝗌ᴛᴏᴍɪᴢᴇ ᴡᴀʀɴɪɴɢ ʟɪᴍɪᴛ\n🔻 ᴀᴜᴛᴏᴍᴜᴛᴇ | ʙᴀɴ\n🔻 ᴡʜɪᴛᴇʟɪ𝗌ᴛ**</blockquote>\n"
 
-ᴀᴅᴅ ᴛᴏ ᴜʀ ɢʀᴏᴜᴘ ᴀɴᴅ ᴜ𝗌ᴇ:
-/config - ғᴏʀ 𝗌ᴇᴛᴛɪɴɢ𝗌
+"**<blockquote>ᴀᴅᴅ ᴛᴏ ᴜʀ ɢʀᴏᴜᴘ ᴀɴᴅ ᴜ𝗌ᴇ:\n /config - ғᴏʀ 𝗌ᴇᴛᴛɪɴɢ𝗌**</blockquote>\n"
 
-ᴄʜᴇᴄᴋ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅ𝗌 - /help**"
+"**ᴄʜᴇᴄᴋ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅ𝗌 - /help**"
     )
     kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("🚀 𝐀ᴅᴅ 𝐌ɛ 🚀", url=add_url)],
@@ -60,19 +56,8 @@ async def start_handler(client: Client, message):
 async def help_handler(client: Client, message):
     chat_id = message.chat.id
     help_text = (
-        "**ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅ𝗌:
-
-𝐌ακɛ 𝐀ᴅмιи
-
-▪️ /config - 𝗌ᴇʀ ᴡᴀʀɴ ᴍᴏᴅᴇ | ᴡᴀʀɴ ʟɪᴍɪᴛ
-
-▪️ /free - ᴀᴘᴘʀᴏᴠᴇ ᴜ𝗌ᴇʀ(ʀᴇᴘʟʏ | ᴜ𝗌ᴇʀ/ɪᴅ)-ᴡʜɪᴛᴇʟɪ𝗌ᴛᴇᴅ
-
-▪️ /unfree - ʀᴇᴍᴏᴠᴇ ғʀᴏᴍ ᴡʜɪᴛᴇʟɪ𝗌ᴛ
-
-▪️ /freelist - ʟɪ𝗌ᴛ ᴀʟʟ ᴀᴘᴘʀᴏᴠᴇᴅ ᴜ𝗌ᴇʀ𝗌
-
-ɴᴏᴛᴇ: ᴛʜɪ𝗌 ᴄᴏᴍɴᴀɴᴅ𝗌 ᴀʀᴇ ᴜ𝗌ᴇ ғᴏʀ ɢʀᴏᴜᴘ𝗌 ᴏɴʟʏ**"
+        "**ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅ𝗌:\n<blockquote>𝐌ακɛ 𝐀ᴅмιи</blockquote>\n<blockquote>▪️ /config - 𝗌ᴇʀ ᴡᴀʀɴ ᴍᴏᴅᴇ | ᴡᴀʀɴ ʟɪᴍɪᴛ\n▪️ /free - ᴀᴘᴘʀᴏᴠᴇ ᴜ𝗌ᴇʀ(ʀᴇᴘʟʏ | ᴜ𝗌ᴇʀ/ɪᴅ)-ᴡʜɪᴛᴇʟɪ𝗌ᴛᴇᴅ\n▪️ /unfree - ʀᴇᴍᴏᴠᴇ ғʀᴏᴍ ᴡʜɪᴛᴇʟɪ𝗌ᴛ\n▪️ /freelist - ʟɪ𝗌ᴛ ᴀʟʟ ᴀᴘᴘʀᴏᴠᴇᴅ ᴜ𝗌ᴇʀ𝗌**</blockquote>\n"
+"**ɴᴏᴛᴇ: ᴛʜɪ𝗌 ᴄᴏᴍɴᴀɴᴅ𝗌 ᴀʀᴇ ᴜ𝗌ᴇ ғᴏʀ ɢʀᴏᴜᴘ𝗌 ᴏɴʟʏ**"
     )
     kb = InlineKeyboardMarkup([
         InlineKeyboardButton("🏓 𝐍ɛтωσяκ 🏓", url="https://t.me/HeartBeat_Offi"),
