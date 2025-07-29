@@ -60,8 +60,7 @@ async def help_handler(client: Client, message):
 "**ɴᴏᴛᴇ: ᴛʜɪ𝗌 ᴄᴏᴍɴᴀɴᴅ𝗌 ᴀʀᴇ ᴜ𝗌ᴇ ғᴏʀ ɢʀᴏᴜᴘ𝗌 ᴏɴʟʏ**"
     )
     kb = InlineKeyboardMarkup([
-            InlineKeyboardButton("🏓 𝐍ɛтωσяκ 🏓", url="https://t.me/HeartBeat_Offi"),
-            InlineKeyboardButton("🏓 𝐒ʋρρσят 🏓", url="https://t.me/HeartBeat_Fam")
+        [InlineKeyboardButton("🗑️ Close", callback_data="close")]
     ])
     await client.send_message(chat_id, help_text, reply_markup=kb)
     
