@@ -36,14 +36,14 @@ async def start_handler(client: Client, message):
     text = (
         "**ᴀᴍ ʙɪᴏ ʟɪɴᴋ ᴘʀᴏᴛᴇᴄᴛᴏʀ
 
-𝐊ɛʏ 𝐅ɛαтʋяɛƨ:
-🔻 ᴀᴜᴛᴏ ᴅᴇᴛᴇᴄᴛ ᴜʀʟ
+<blockquote>𝐊ɛʏ 𝐅ɛαтʋяɛƨ:</blockquote>
+<blockquote>🔻 ᴀᴜᴛᴏ ᴅᴇᴛᴇᴄᴛ ᴜʀʟ
 🔻 ᴄᴜ𝗌ᴛᴏᴍɪᴢᴇ ᴡᴀʀɴɪɴɢ ʟɪᴍɪᴛ
 🔻 ᴀᴜᴛᴏᴍᴜᴛᴇ | ʙᴀɴ
-🔻 ᴡʜɪᴛᴇʟɪ𝗌ᴛ
+🔻 ᴡʜɪᴛᴇʟɪ𝗌ᴛ</blockquote>
 
-ᴀᴅᴅ ᴛᴏ ᴜʀ ɢʀᴏᴜᴘ ᴀɴᴅ ᴜ𝗌ᴇ:
-/config - ғᴏʀ 𝗌ᴇᴛᴛɪɴɢ𝗌
+<blockquote>ᴀᴅᴅ ᴛᴏ ᴜʀ ɢʀᴏᴜᴘ ᴀɴᴅ ᴜ𝗌ᴇ:
+/config - ғᴏʀ 𝗌ᴇᴛᴛɪɴɢ𝗌</blockquote>
 
 ᴄʜᴇᴄᴋ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅ𝗌 - /help**"
     )
@@ -62,15 +62,15 @@ async def help_handler(client: Client, message):
     help_text = (
         "**ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅ𝗌:
 
-𝐌ακɛ 𝐀ᴅмιи
+<blockquote>𝐌ακɛ 𝐀ᴅмιи</blockquote>
 
-▪️ /config - 𝗌ᴇʀ ᴡᴀʀɴ ᴍᴏᴅᴇ | ᴡᴀʀɴ ʟɪᴍɪᴛ
+<blockquote>▪️ /config - 𝗌ᴇʀ ᴡᴀʀɴ ᴍᴏᴅᴇ | ᴡᴀʀɴ ʟɪᴍɪᴛ
 
 ▪️ /free - ᴀᴘᴘʀᴏᴠᴇ ᴜ𝗌ᴇʀ(ʀᴇᴘʟʏ | ᴜ𝗌ᴇʀ/ɪᴅ)-ᴡʜɪᴛᴇʟɪ𝗌ᴛᴇᴅ
 
 ▪️ /unfree - ʀᴇᴍᴏᴠᴇ ғʀᴏᴍ ᴡʜɪᴛᴇʟɪ𝗌ᴛ
 
-▪️ /freelist - ʟɪ𝗌ᴛ ᴀʟʟ ᴀᴘᴘʀᴏᴠᴇᴅ ᴜ𝗌ᴇʀ𝗌
+▪️ /freelist - ʟɪ𝗌ᴛ ᴀʟʟ ᴀᴘᴘʀᴏᴠᴇᴅ ᴜ𝗌ᴇʀ𝗌</blockquote>
 
 ɴᴏᴛᴇ: ᴛʜɪ𝗌 ᴄᴏᴍɴᴀɴᴅ𝗌 ᴀʀᴇ ᴜ𝗌ᴇ ғᴏʀ ɢʀᴏᴜᴘ𝗌 ᴏɴʟʏ**"
     )
