@@ -56,7 +56,9 @@ async def start_handler(client: Client, message):
 async def help_handler(client: Client, message):
     chat_id = message.chat.id
     help_text = (
-        "help" )
+        "**ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅ𝗌:\n<blockquote>𝐌ακɛ 𝐀ᴅмιи</blockquote>\n<blockquote>▪️ /config - 𝗌ᴇʀ ᴡᴀʀɴ ᴍᴏᴅᴇ | ᴡᴀʀɴ ʟɪᴍɪᴛ\n▪️ /free - ᴀᴘᴘʀᴏᴠᴇ ᴜ𝗌ᴇʀ(ʀᴇᴘʟʏ | ᴜ𝗌ᴇʀ/ɪᴅ)-ᴡʜɪᴛᴇʟɪ𝗌ᴛᴇᴅ\n▪️ /unfree - ʀᴇᴍᴏᴠᴇ ғʀᴏᴍ ᴡʜɪᴛᴇʟɪ𝗌ᴛ\n▪️ /freelist - ʟɪ𝗌ᴛ ᴀʟʟ ᴀᴘᴘʀᴏᴠᴇᴅ ᴜ𝗌ᴇʀ𝗌**</blockquote>\n"
+"**ɴᴏᴛᴇ: ᴛʜɪ𝗌 ᴄᴏᴍɴᴀɴᴅ𝗌 ᴀʀᴇ ᴜ𝗌ᴇ ғᴏʀ ɢʀᴏᴜᴘ𝗌 ᴏɴʟʏ**"
+    )
     kb = InlineKeyboardMarkup([
         InlineKeyboardButton("🏓 𝐍ɛтωσяκ 🏓", url="https://t.me/HeartBeat_Offi"),
         InlineKeyboardButton("🏓 𝐒ʋρρσят 🏓", url="https://t.me/HeartBeat_Fam")
