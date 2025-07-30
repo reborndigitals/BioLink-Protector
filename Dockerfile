@@ -16,4 +16,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 CMD python3 bio.py
-RUN python keep_alive.py
+#RUN python keep_alive.py
