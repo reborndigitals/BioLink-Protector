@@ -22,7 +22,7 @@ from config import (
 )
 
 app = Client(
-    "biolink_protector_bot",
+    "BioLinkRobot",
     api_id=API_ID,
     api_hash=API_HASH,
     bot_token=BOT_TOKEN,
