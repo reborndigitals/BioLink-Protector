@@ -6,7 +6,7 @@ Channel: https://t.me/itsSmartDev
 
 from pyrogram import Client, filters, errors
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ChatPermissions
-
+from heartbeat import heartbeat
 from helper.utils import (
     is_admin,
     get_config, update_config,
@@ -364,4 +364,5 @@ async def check_bio(client: Client, message):
         await reset_warnings(chat_id, user_id)
 
 if __name__ == "__main__":
+    heartbeat()
     app.run()
